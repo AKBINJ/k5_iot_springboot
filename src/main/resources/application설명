@@ -1,0 +1,24 @@
+# application.properties
+# : 애플리케이션 실행 시 설정 파일
+# - 언어 Key=Value 형태의 단순 텍스트
+# >> 서버 설정
+# >> DATABASE 연결 정보 설정
+# >> JPA/Hibernate 설정
+# >> 로깅/이메일/파일 업로드/보안 등 런타임 환경설정
+spring.application.name=k5_iot_springboot
+
+server.port=8080
+
+spring.datasource.url=jdbc:mysql://localhost:3306/k5_iot_springboot
+spring.datasource.username=root
+spring.datasource.password=root
+spring.jpa.show-sql=true
+# : 기본값 false
+# : 콘솔에 실행되는 SQL 로그 출력 (SQL 확인용으로 유용 - 개발 단계에서만 사용)
+
+spring.jpa.hibernate.ddl-auto=update
+# : JPA가 엔티티를 보고 DB 스키마를 어떻게 관리할지 결정
+# - update 옵션: 변경 사항만 저장 (개발 단계에서만 유용! 운영 시 제거 권장)
+#           >> 가능한 범위 내에서 ADD/ALTER 등을 시도해 스키마를 엔티티에 맞춰 수정
+
+# spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver (생략)

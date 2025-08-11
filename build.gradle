@@ -1,0 +1,54 @@
+// Spring Boot 3.5.x + Gradle(Groovy) 프로젝트의 build.gradle
+// - 목적: JPA + Web 사용의 표준 서버 애플리케이션 프로젝트 기본 설정
+plugins {
+	// 자바 프로젝트임을 선언 - Gradle이 Java 소스 컴파일/테스트/패키징 태스크를 인지하도록 함
+	id 'java'
+	// 스프링부트 실행 태스크와 자동 설정을 제공 (프로젝트가 사용하는 Spring Boot 버전과 반드시 일치)
+	id 'org.springframework.boot' version '3.5.4'
+	// 스프링부트 의존성 버전 관리를 위임
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.example' // Maven 그룹 ID (프로젝트 패키지)
+version = '0.0.1-SNAPSHOT' // 애플리케이션 버전
+
+java {
+	// 컴파일러/런타임 JDK 버전을 고정 (로컬에 17버전이 없으면 Gradle이 자동 설치/사용 가능)
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	// 컴파일 시에만 필요한 의존성 (EX. Lombok)
+	compileOnly {
+		extendsFrom annotationProcessor // 어노테이션 처리도 함께 사용하는 설정
+	}
+}
+
+repositories {
+	// 의존성 중앙 저장소 - 대부분 라이브러리가 mavenCentral()에서 다운로드됨
+	mavenCentral()
+}
+
+dependencies {
+	// === Spring 스타터 === //
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// === Lombok(컴파일 전용) === //
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// === Database === //
+	runtimeOnly 'com.h2database:h2'
+	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	// === 테스트 의존성 === //
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
