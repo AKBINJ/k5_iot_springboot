@@ -32,16 +32,38 @@ repositories {
 }
 
 dependencies {
-	// === Spring 스타터 === //
+	// Spring Data JPA 스타터
+	// - JPA 표준 + Hibernate ORM + HikariCP(커넥션 풀) + 트랜잭션 등 포함
+	// - 엔티티 매핑, 리포지토리(Repository) 인터페이스 기반 CRUD 지원
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	// Spring Web 스타터
+	// - Spring MVC + Embedded Tomcat(기본) + Jackson(JSON 직렬화) 포함
+	// - REST API, 컨트롤러(@RestController) 작성의 기본
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
+	// Spring Web Validation 스타터
+	// - 데이터 유효성 검사를 위한 의존성 추가
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
 	// === Lombok(컴파일 전용) === //
+	// - @Getter/@Setter/@Builder 등 반복 코드를 컴파일 타임에 자동 생성
+	// - 런타임에는 필요하지 않으므로 compileOnly 로 의존성 최소화(최종 JAR 크기↓)
 	compileOnly 'org.projectlombok:lombok'
+
+	// Lombok 애노테이션 프로세서
+	// - Lombok이 소스 코드를 생성하게 만드는 실제 '처리기'
+	// - IntelliJ 사용 시 "Annotation Processing" 활성화 필요
 	annotationProcessor 'org.projectlombok:lombok'
 
-	// === Database === //
+	// H2 데이터베이스(런타임 전용)
+	// - 인메모리 DB. 로컬 개발/테스트용으로 가볍고 초기 설정이 쉬움
+	// - spring.datasource.* 미설정 + H2 존재 시, Boot가 임베디드 DataSource 자동 구성
 	runtimeOnly 'com.h2database:h2'
+
+	// MySQL 커넥터(런타임 전용)
+	// - 운영/스테이징 등 실제 MySQL 서버에 접속할 때 사용
+	// - H2와 동시에 classpath 에 있어도, 실제로는 프로필/설정에 따라 한쪽만 접속됨
 	runtimeOnly 'com.mysql:mysql-connector-j'
 
 	// === 테스트 의존성 === //

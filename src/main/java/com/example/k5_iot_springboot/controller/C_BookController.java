@@ -1,6 +1,6 @@
 package com.example.k5_iot_springboot.controller;
 
-import com.example.k5_iot_springboot.common.contants.ApiMappingPattern;
+import com.example.k5_iot_springboot.common.constants.ApiMappingPattern;
 import com.example.k5_iot_springboot.dto.ResponseDto;
 import com.example.k5_iot_springboot.dto.C_Book.BookCreateRequestDto;
 import com.example.k5_iot_springboot.dto.C_Book.BookResponseDto;

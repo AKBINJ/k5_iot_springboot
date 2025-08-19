@@ -37,8 +37,43 @@ CREATE TABLE IF NOT EXISTS books (
     category VARCHAR(20) NOT NULL,
     # 자바 enum 데이터 처리 
     # : DB에서는 VARCHAR(문자열)로 관리 + CHECK 제약 조건으로 문자 제한
-    CONSTRAINT chk_book_category CHECK (category IN ('NOVEL', 'ESSAY', 'POEM', 'MEGAZINE')),
+    CONSTRAINT chk_book_category CHECK (category IN ('NOVEL', 'ESSAY', 'POEM', 'MAGAZINE')),
     # 같은 저자 + 동일 제목 중복 저장 방지
     CONSTRAINT uk_book_writer_title UNIQUE (writer, title)
 );
 SELECT * FROM books;
+
+# 0819 (D_Post & D_Comment)
+-- 게시글 테이블
+CREATE TABLE IF NOT EXISTS `posts` (
+	`id`		BIGINT NOT NULL AUTO_INCREMENT,
+    `title` 	VARCHAR(200) NOT NULL COMMENT '게시글 제목',
+    `content` 	LONGTEXT NOT NULL COMMENT '게시글 내용', -- @Lob 매핑 대응
+    `author` 	VARCHAR(100) NOT NULL COMMENT '작성자 표시명 또는 ID',
+    PRIMARY KEY (`id`),
+    KEY `idx_post_author` (`author`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  COMMENT = '게시글';
+  
+-- 댓글 테이블
+CREATE TABLE IF NOT EXISTS `comments` (
+	`id`		BIGINT NOT NULL AUTO_INCREMENT,
+    `post_id`	BIGINT NOT NULL COMMENT 'posts.id FK',
+    `content` 	varchar(1000) not null comment '댓글 내용',
+    `commenter` varchar(100) not null comment '댓글 작성자 표시명 또는 ID',
+    primary key (`id`),
+    key `idx_comment_post_id` (`post_id`),
+    key `idx_comment_commenter` (`commenter`),
+    constraint `fk_comment_post`
+		foreign key (`post_id`) references `posts` (`id`)
+        on delete cascade
+        on update cascade
+) ENGINE=InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  COMMENT = '댓글';
+
+select * from `posts`;
+select * from `comments`;
