@@ -52,4 +52,12 @@ public class ApiMappingPattern {
         public static final String ID_ONLY = "/{commentId}";
         public static final String BY_ID = ROOT + "/{commentId}";
     }
+
+    // == 4. 게시글(F_Board) == //
+    public static final class Boards{
+        private Boards() {}
+
+        public static final String ROOT = BASE + "/boards";
+        public static final String ID_ONLY = "/{boardId}";
+    }
 }

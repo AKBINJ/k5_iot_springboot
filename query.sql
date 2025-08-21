@@ -77,3 +77,19 @@ CREATE TABLE IF NOT EXISTS `comments` (
 
 select * from `posts`;
 select * from `comments`;
+
+# 0821 (F_Board)
+-- 게시판 테이블(생성/수정 시간 포함)
+CREATE TABLE IF NOT EXISTS 	`boards` (
+	id BIGINT auto_increment,
+    title varchar(150) not null,
+    content longtext not null,
+    created_at datetime(6) not null,
+    updated_at datetime(6) not null,
+    primary key (`id`)
+) engine=InnoDB
+default charset = utf8mb4
+collate = utf8mb4_unicode_ci
+comment = '게시글';
+
+select * from `boards`;

@@ -46,6 +46,9 @@ dependencies {
 	// - 데이터 유효성 검사를 위한 의존성 추가
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+	// Java 8 시간/날짜 직렬화
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2'
+
 	// === Lombok(컴파일 전용) === //
 	// - @Getter/@Setter/@Builder 등 반복 코드를 컴파일 타임에 자동 생성
 	// - 런타임에는 필요하지 않으므로 compileOnly 로 의존성 최소화(최종 JAR 크기↓)
