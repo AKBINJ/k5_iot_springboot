@@ -93,3 +93,5 @@ collate = utf8mb4_unicode_ci
 comment = '게시글';
 
 select * from `boards`;
+
+USE k5_iot_springboot;
