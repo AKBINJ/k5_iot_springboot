@@ -46,6 +46,16 @@ dependencies {
 	// - 데이터 유효성 검사를 위한 의존성 추가
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+	// Spring Web Security 스타터
+	// -보안 처리를 위한 의존성 추가
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	testImplementation 'org.springframework.security:spring-security-test'
+
+	// JWT 의존성 추가
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
 	// Java 8 시간/날짜 직렬화
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2'
 
