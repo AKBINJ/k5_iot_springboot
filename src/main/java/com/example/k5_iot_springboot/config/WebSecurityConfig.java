@@ -1,6 +1,8 @@
 package com.example.k5_iot_springboot.config;
 
 import com.example.k5_iot_springboot.filter.JwtAuthenticationFilter;
+import com.example.k5_iot_springboot.handler.JsonAccessDeniedHandler;
+import com.example.k5_iot_springboot.handler.JsonAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -38,6 +40,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class WebSecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter; // 사용자 정의 JWT 검증 필터 (아래에서 필터 체인에 추가)
+    private final JsonAuthenticationEntryPoint authenticationEntryPoint;
+    private final JsonAccessDeniedHandler accessDeniedHandler;
 
     // CORS 관련 속성을 properties에서 주입받아 콤마(,)로 분리하여 저장하는 데이터
     @Value("${cors.allowed-origins:*}") // https://app.example.com, https://admin.example.com
@@ -121,7 +125,11 @@ public class WebSecurityConfig {
                 // 예외 처리 지점 (필요 시 커스텀 핸들러 연결)
                 // : 폼 로그인/HTTP Basic 비활성 - JWT 만 사용!
                 .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable);
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler)
+                );
 
         // H2 DB 콘솔은 웹 브라우저에 iframe 태그를 사용하여 페이지를 띄움
         // : 로컬 개발 환경에서 H2 콘솔을 보려면 해당 설정 필요
