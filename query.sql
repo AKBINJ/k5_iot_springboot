@@ -116,4 +116,28 @@ CREATE TABLE IF NOT EXISTS 	`users` (
   
 SELECT * FROM `users`;
 
+# 0827 (G_User_role)
+-- 사용자 권한 테이블
+CREATE TABLE IF NOT EXISTS 	`user_roles` (
+	user_id bigint not null,
+    role varchar(30) not null,
+    
+    constraint fk_user_roles_user
+		foreign key (user_id) references users(id) on delete cascade,
+	constraint uk_user_roles unique (user_id, role),
+    
+    constraint chk_user_roles_role check (role in ('USER', 'MANAGER', 'ADMIN'))
+) ENGINE=InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  COMMENT = '사용자 권한';
+  
+select * from `user_roles`;
+
+# 샘플데이터 #
+INSERT INTO user_roles (user_id, role)
+VALUES (1, "ADMIN");
+INSERT INTO user_roles (user_id, role)
+VALUES (2, "user");
+
 USE k5_iot_springboot;
