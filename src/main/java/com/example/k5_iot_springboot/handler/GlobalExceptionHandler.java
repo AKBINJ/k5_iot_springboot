@@ -89,7 +89,7 @@ public class GlobalExceptionHandler {
     }
 
     // === 403 Forbidden: 접근 거부 === //
-    @ExceptionHandler(AccessDeniedException.class)
+    @ExceptionHandler({ AccessDeniedException.class, AccessDeniedException.class })
     public ResponseEntity<ResponseDto<Object>> handleAccessDenied(AccessDeniedException e) {
         log.warn("AccessDenied: {}", e.getMessage());
         return fail(ErrorCode.FORBIDDEN, null, null);
