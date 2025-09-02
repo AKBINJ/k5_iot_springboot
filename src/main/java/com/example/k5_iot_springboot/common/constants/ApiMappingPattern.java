@@ -60,4 +60,21 @@ public class ApiMappingPattern {
         public static final String ROOT = BASE + "/boards";
         public static final String ID_ONLY = "/{boardId}";
     }
+
+    // == 5. 제품(I_Product) == //
+    public static final class Products {
+        private Products() {}
+
+        public static final String ROOT = BASE + "/products";
+        public static final String ID_ONLY = "/{productId}";
+    }
+
+    // == 6. 재고(I_Stock) == //
+    public static final class Stocks {
+        private Stocks() {}
+
+        public static final String ROOT = BASE + "/stocks";
+        public static final String ADJUST = "/{adjust}";
+        public static final String PRODUCT_ID = "/{productId}";
+    }
 }

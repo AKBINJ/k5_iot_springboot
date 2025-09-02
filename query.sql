@@ -276,6 +276,69 @@ values
 	(2, 30, now(6), now(6)),
 	(3, 70, now(6), now(6)),
 	(4, 20, now(6), now(6));
+   
+### 0902
+-- 뷰 (행 단위)
+-- : 주문 상세 화면(API) - 한 주문의 각 상품 라인 아이템 정보를 상세하게 제공할 때
+-- : 예) GET /api/v1/orders/{odrderId}/items
+create or replace view order_summary as
+select
+	o.id					AS order_id,
+    o.user_id				AS user_id,
+    o.order_status			AS order_status,
+    p.name					AS product_name,
+    oi.quantity				AS quantity,
+    p.price					AS price,
+    CAST((oi.quantity * p.price)AS signed) AS total_price, -- BIGINT로 고정
+    o.created_at			AS order_at
+from
+	orders o
+    join order_items oi on o.id = oi.order_id
+    join products p on oi.product_id = p.id;
+    
+-- 뷰 (주문 합계)
+create or replace view order_totals AS
+select
+	o.id						AS order_id,
+    o.user_id					AS user_id,
+    o.order_status				AS order_status,
+    cast(SUM(oi.quantity * p.price)as signed) 	AS order_total_amount,
+    cast(sum(oi.quantity)as signed)			AS order_total_qty,
+    min(o.created_at)			AS ordered_at
+
+from
+	orders o
+    join order_items oi on o.id = oi.order_id
+    join products p on oi.product_id = p.id
+group by
+	o.id, o.user_id, o.order_status; -- 주문 별 합계: 주문(orders) 정보를 기준으로 그룹화
+    
+-- 트리거: 주문 생성 시 로그
+# 고객 문의/장애 분석 시 "언제 주문 레코드가 생겼는지" 원인 추적에 사용
+DELIMITER //
+create trigger trg_after_order_insert
+	after insert on orders
+    for each row
+    begin
+		insert into order_logs(order_id, message)
+        values (new.id, concat('주문이 생성되었습니다. 주문 ID: ', new.id));
+END //
+DELIMITER ;
+
+-- 트리거: 주문 상태 변경 시 로그
+# 상태 전이 추적 시 "누가 언제 어떤 상태로 바꿨는지" 원인 추적에 사용
+DELIMITER //
+create trigger trg_after_order_status_update
+after update on orders
+for each row
+begin
+	if new.order_status <> OLD.order_status THEN -- A <> B 는 A != B와 같은 의미 (같지 않다)
+		insert into order_logs(order_id, message)
+        values (new.id, concat('주문 상태가', old.order_status
+					, '->', new.order_status, '로 변경되었습니다.'));
+	end if;
+end //
+DELIMITER ;
   
 select * from `products`;
 select * from `stocks`;
