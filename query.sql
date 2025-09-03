@@ -290,7 +290,7 @@ select
     oi.quantity				AS quantity,
     p.price					AS price,
     CAST((oi.quantity * p.price)AS signed) AS total_price, -- BIGINT로 고정
-    o.created_at			AS order_at
+    o.created_at			AS ordered_at
 from
 	orders o
     join order_items oi on o.id = oi.order_id
@@ -299,12 +299,12 @@ from
 -- 뷰 (주문 합계)
 create or replace view order_totals AS
 select
-	o.id						AS order_id,
-    o.user_id					AS user_id,
-    o.order_status				AS order_status,
-    cast(SUM(oi.quantity * p.price)as signed) 	AS order_total_amount,
-    cast(sum(oi.quantity)as signed)			AS order_total_qty,
-    min(o.created_at)			AS ordered_at
+	o.id										AS order_id,
+    o.user_id									AS user_id,
+    o.order_status								AS order_status,
+    cast(SUM(oi.quantity * p.price)as signed) 	AS order_total_amount, -- BIGINT로 고정
+    cast(sum(oi.quantity)as signed)				AS order_total_qty, -- BIGINT로 고정
+    min(o.created_at)							AS ordered_at
 
 from
 	orders o

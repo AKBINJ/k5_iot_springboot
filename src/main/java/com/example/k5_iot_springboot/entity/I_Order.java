@@ -65,4 +65,8 @@ public class I_Order extends BaseTimeEntity {
         items.remove(item);
         item.setOrder(null);
     }
+
+    public void setOrderStatus(OrderStatus orderStatus) {
+        this.orderStatus = orderStatus;
+    }
 }
