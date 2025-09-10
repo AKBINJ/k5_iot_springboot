@@ -36,13 +36,13 @@ public class UserPrincipalMapper {
 
         Collection<? extends GrantedAuthority> authorities =
                 // 사용자 정보 내부의 권한이 비어져 있거나 없는 경우
-                (user.getRoles() == null || user.getRoles().isEmpty())
+                (user.getUserRoles() == null || user.getUserRoles().isEmpty())
                         // 기본 권한 "ROLE_USER" 부여
                         ? List.of(new SimpleGrantedAuthority("ROLE_USER"))
                         // 해당 권한(들)을 GrantedAuthority 타입으로 변환하여 반환
-                        : user.getRoles().stream()
+                        : user.getUserRoles().stream()
                         .map(r -> {
-                            String name = r.name();
+                            String name = r.getRole().toString();
                             String role = name.startsWith("ROLE_") ? name : "ROLE_" + name;
                             return new SimpleGrantedAuthority(role);
                         })

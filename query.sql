@@ -116,6 +116,53 @@ CREATE TABLE IF NOT EXISTS 	`users` (
   
 SELECT * FROM `users`;
 
+# 0910 (G_Role)
+-- 권한 코드 테이블
+create table if not exists `roles` (
+	role_name varchar(30) primary key
+) ENGINE=InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  COMMENT = '권한 코드(USER, MANAGER, OWNER 등)';
+  
+  # 0910 (G_UserRoleId)
+  -- 사용자-권한 매핑 (조인 엔티티)
+  -- drop table if exists `user_roles`;
+  create table if not exists `user_roles` (
+	user_id bigint not null,
+    role_name varchar(30) not null,
+    primary key (user_id, role_name),
+    constraint fk_user_roles_user foreign key (user_id) references users(id),
+    constraint fk_user_roles_role foreign key (role_name) references roles(role_name)
+  ) ENGINE=InnoDB
+	DEFAULT CHARSET = utf8mb4
+	COLLATE = utf8mb4_unicode_ci
+	COMMENT = '사용자 권한 매핑';
+    
+## 권한 데이터 삽입
+insert into roles (role_name) values
+	('USER'),
+    ('MANAGER'),
+    ('ADMIN')
+    #이미 값이 있는 경우(DUPLICATE, 중복)
+    # , 에러 대신 그대로 유지할 것을 설정
+    ON duplicate key update role_name = values(role_name);
+    
+select * from roles;
+
+## 사용자 권한 매핑 삽입 ##
+insert into user_roles (user_id, role_name) values
+	(1, 'USER'),
+    (2, 'USER'),
+    (2, 'MANAGER'),
+    (3, 'MANAGER'),
+    (3, 'ADMIN')
+    ON duplicate key update role_name = values(role_name);
+    
+select * from user_roles;
+
+### 사용하지 않음 ###
+# : 위의 사용자-권한 다대다 형식 사용 권장
 # 0827 (G_User_role)
 -- 사용자 권한 테이블
 CREATE TABLE IF NOT EXISTS 	`user_roles` (

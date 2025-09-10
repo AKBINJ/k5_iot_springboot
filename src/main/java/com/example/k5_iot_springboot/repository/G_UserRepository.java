@@ -20,7 +20,7 @@ public interface G_UserRepository extends JpaRepository<G_User, Long> {
     @Query("""
         SELECT u 
         FROM G_User u
-            LEFT JOIN FETCH u.roles
+            LEFT JOIN FETCH u.userRoles
         WHERE u.loginId = :loginId
     """)
     Optional<G_User> findWithRolesByLoginId(@Param("loginId") String loginId);

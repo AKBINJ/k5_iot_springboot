@@ -1,11 +1,14 @@
 package com.example.k5_iot_springboot.service.impl;
 
+import com.example.k5_iot_springboot.common.enums.RoleType;
 import com.example.k5_iot_springboot.dto.G_Auth.request.SignInRequest;
 import com.example.k5_iot_springboot.dto.G_Auth.request.SignUpRequest;
 import com.example.k5_iot_springboot.dto.G_Auth.response.SignInResponse;
 import com.example.k5_iot_springboot.dto.ResponseDto;
+import com.example.k5_iot_springboot.entity.G_Role;
 import com.example.k5_iot_springboot.entity.G_User;
 import com.example.k5_iot_springboot.provider.JwtProvider;
+import com.example.k5_iot_springboot.repository.G_RoleRepository;
 import com.example.k5_iot_springboot.repository.G_UserRepository;
 import com.example.k5_iot_springboot.service.G_AuthService;
 import io.jsonwebtoken.Claims;
@@ -26,6 +29,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class G_AuthServiceImpl implements G_AuthService {
     private final G_UserRepository userRepository;
+    private final G_RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     // @Bean 메서드로 BCryptPasswordEncoder 객체를 리턴하면
     //      , 스프링 컨테이너에 등록될 때 PasswordEncoder 타입으로 인식 (주입 시 해당 타입으로 정의 권장)
@@ -57,6 +61,11 @@ public class G_AuthServiceImpl implements G_AuthService {
                 .nickname(req.nickname())
 //                .gender(req.gender()) - null 허용
                 .build();
+
+        // 기본 권한 부여
+        // cf) getReferenceById: 특정 ID를 가진 엔티티의 프록시 객체를 즉시 반환
+        G_Role defaultRole = roleRepository.getReferenceById(RoleType.USER);
+        user.grantRole(defaultRole); // 변경 감지로 user_roles가 insert 됨 (cascade=ALL)
 
         userRepository.save(user);
     }
