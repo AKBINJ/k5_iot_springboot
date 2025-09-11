@@ -123,7 +123,9 @@ public class G_User extends BaseTimeEntity {
         userRoles.removeIf(ur -> ur.getRole().equals(role));
     }
 
-    // 3. JWT 시 활용할 파생 접근자
+    // 3. DTO 응답 생성 시 사용 - 응답 DTO에서 권한 엔티티 자체를 넘기지 않고 단순화 된 역할 타입(RoleType - enum)만 전달
+    // G_UserRole 타입(권한 엔티티 전체) >> RoleType 타입(enum 타입)으로 변환
+    // : 엔티티를 단순 enum 집합으로 변환하는 헬퍼 메서드
     public Set<RoleType> getRoleTypes() {
         return userRoles.stream()
                 .map(ur -> ur.getRole().getName())
