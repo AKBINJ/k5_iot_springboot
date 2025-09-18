@@ -1,0 +1,78 @@
+1. 도메인 설정
+   - 프로젝트 개요 완성
+(user - loginId, name, passdword,  status(user or manager) - 보류 )
+   - 권한  : Admin(owner), user, manager(보류)
+   
+(★ Auth (사용자 회원가입) ★)
+POST /api/v1/auth/sign-up 
+POST /api/v1/auth/sign-in
+
+(★ Auth (사용자 프로필) ★)
+GET /api/v1/users/me
+
+(Project - projectId, userId, projectName, )
+
+(★ Project (사용자 ToDoList생성) ★)
+POST     /api/projects/{admin}
+GET        /api/projects
+GET       /api/projects/{projectId}
+PUT        /api/projects/{projectId}
+DELETE    /api/projects/{projectId}
+
+(Task - taskId, projectId, title, status, priority, userId, dueDate,  createdAt, updatedAt) 
+(Tag - tagId, taskId, name(종류), color ) (task : tag = N : M)
+
+(★ Tasks (ToDoList안에 할 일 생성 ) ★)
+POST    /api/projects/{projectId}/tasks
+GET       /api/projects/{projectId}/tasks?status=&tag=&assignee=&dueFrom=&dueTo=&page=&size=&sort=`
+GET       /api/tasks/{taskId}
+PUT       /api/tasks/{taskId}
+DELETE    /api/tasks/{taskId}
+PUT      /api/tasks/{taskId}/status (상태 변경)
+PUT      /api/tasks/{taskId}/assignee/{userId} (담당자 변경)
+
+(comment - commentId, taskId, userId, content(내용), createdAt, UpdatedAt) 
+
+(★ Comments (Task 답글) ★)
+POST /api/tasks/{taskId}/comments`
+GET /api/tasks/{taskId}/comments`
+
+2. 브랜치 네이밍 규칙 설정
+
+scope : 심플하게
+
+3. 기능 분담 의견 나누기
+
+
+4인
+
+- **A(리드/백엔드)** - 김승민
+: 보안/JWT, [ User 도메인 + 개인정보수정 / 프로필 ]  , [ Tag 도메인 - 다대다 설정 ]
+
+- **B(백엔드)** - 오신혁
+: DB 세팅 + Entity 파일 생성
+  , [ Task 도메인 + 필터(상태/태그/담당자/기간) ], baseTimeEntity
+
+
+- **C(백엔드)** - 박진영
+: Controller 파일 생성 (+ 기본 어노테이션 첨부 및 ApiMappingPattern 등록 / 경로 메모 첨부)
+  , [ Comment/Notification(공지) + 필터링/정렬 ],
+: common 세팅(ApiMappingPattern/ENUM타입/DateUtils 등)
+ 
+
+
+
+- **D(백엔드)** - 정지훈
+: Service/ServiceImpl 파일 생성 (+ 기본 어노테이션 첨부 및 파일 상단 권한 메모 첨부)
+ , Repository 파일 생성 및 handler(GlobalExceptionHandler 설계)
+  , [ Project 도메인 + 필터링/정렬 ]
+
++@
+*(선택 확장)* **TaskHistory**: 상태/담당자/마감일 변경 로그
+Task (1) — (N) TaskHistory
+
+
+// 4인 조 - (Task + Tag - B) & (common 세팅 - C ) 
+
+
+4. 호출(강사님 소환)

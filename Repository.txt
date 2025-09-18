@@ -1,0 +1,48 @@
+Repository
+
+JPQL 기반 Task별 댓글 조회 + 선택적 작성자 필터
+    @Query("""
+            SELECT c FROM Comments c
+            WHERE c.task.id = :taskId
+            AND (:commenterId IS NULL OR c.commenter.id = :commenterId)
+            """)
+    List<Comments> findByTaskIdAndOptionalCommenterId(
+            @Param("taskId") Long taskId,
+            @Param("commenterId") Long commenterId,
+            Sort sort
+    );
+
+
+
+Service
+
+@Override
+@Transactional(readOnly = true)
+public ResponseDto<List<CommentResponseDto>> getComments(Long taskId, Long commenterId, boolean latestFirst) {
+    Sort sort = latestFirst
+            ? Sort.by(Sort.Direction.DESC, "createdAt")
+            : Sort.by(Sort.Direction.ASC, "createdAt");
+
+    List<Comments> comments = commentRepository.findByTaskIdAndOptionalCommenterId(taskId, commenterId, sort);
+
+    List<CommentResponseDto> response = comments.stream()
+            .map(CommentResponseDto::from)
+            .toList();
+
+    return ResponseDto.setSuccess("SUCCESS", response);
+}
+
+
+
+Controller
+
+@GetMapping
+public ResponseEntity<ResponseDto<List<CommentResponseDto>>> getComments(
+        @PathVariable("taskId") @Positive Long taskId,
+        @RequestParam(required = false) Long commenterId,
+        @RequestParam(defaultValue = "true") boolean latestFirst
+) {
+    ResponseDto<List<CommentResponseDto>> response =
+            commentService.getComments(taskId, commenterId, latestFirst);
+    return ResponseEntity.ok().body(response);
+}

@@ -1,0 +1,16 @@
+받는거
+
+    @NotNull
+    private Long userId;  // 알림 받을 사용자 ID
+
+    @NotNull
+    private Type type;    // 알림 유형 (예: TASK_ASSIGNED, MENTION 등)
+
+    @NotNull
+    private RefType refType;  // 참조 대상 종류 (예: TASK, COMMENT)
+
+    @NotNull
+    private Long refId;   // 참조 대상 ID
+
+    @NotBlank
+    private String message;  // 알림 메시지 내용

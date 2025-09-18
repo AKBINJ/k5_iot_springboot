@@ -1,0 +1,135 @@
+엔티티
+
+import jakarta.persistence.*;
+import lombok.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(
+    name = "notifications",
+    indexes = {
+        @Index(name = "idx_notify_user_read", columnList = "user_id, is_read")
+    }
+)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Notification {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    // 사용자 (N:1 관계)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, insertable = false, updatable = false)
+    private User user;
+
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private NotificationType type; // TASK_ASSIGNED, MENTION, COMMENT, STATUS_CHANGED
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ref_type", nullable = false, length = 20)
+    private ReferenceType refType; // TASK, COMMENT
+
+    @Column(name = "ref_id", nullable = false)
+    private Long refId; // 참조하는 엔티티 id (taskId or commentId)
+
+    @Column(nullable = false, length = 255)
+    private String message;
+
+    @Column(name = "is_read", nullable = false)
+    private Boolean isRead = false;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.isRead = false;
+    }
+}
+
+
+
+
+
+
+
+dto
+
+
+import lombok.*;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class NotificationRequest {
+    private Long userId;
+    private NotificationType type;
+    private ReferenceType refType;
+    private Long refId;
+    private String message;
+}
+
+
+
+
+
+controller
+
+
+
+
+import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import java.util.List;
+
+@RestController
+@RequestMapping(ApiMappingPattern.API_PREFIX + "/notifications")
+public class NotificationController {
+
+    private final NotificationService notificationService;
+
+    public NotificationController(NotificationService notificationService) {
+        this.notificationService = notificationService;
+    }
+
+    // 공지 생성
+    @PostMapping
+    public ResponseEntity<NotificationResponse> createNotification(@RequestBody NotificationRequest request) {
+        return ResponseEntity.ok(notificationService.createNotification(request));
+    }
+
+    // 사용자별 알림 조회
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<List<NotificationResponse>> getUserNotifications(@PathVariable Long userId,
+                                                                           @RequestParam(defaultValue = "false") boolean unreadOnly) {
+        return ResponseEntity.ok(notificationService.getUserNotifications(userId, unreadOnly));
+    }
+
+    // 알림 읽음 처리
+    @PutMapping("/{id}/read")
+    public ResponseEntity<Void> markAsRead(@PathVariable Long id) {
+        notificationService.markAsRead(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // 알림 삭제
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteNotification(@PathVariable Long id) {
+        notificationService.deleteNotification(id);
+        return ResponseEntity.noContent().build();
+    }
+}
+
+
