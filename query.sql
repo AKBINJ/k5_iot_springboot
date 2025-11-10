@@ -209,6 +209,15 @@ CREATE TABLE IF NOT EXISTS 	`articles` (
   
 select * from articles;
 
+INSERT INTO articles (title, content, author_id, created_at, updated_at)
+values
+	('기사 1', '기사 1의 내용', 1, now(6), now(6)),
+	('기사 2', '기사 2의 내용', 2, now(6), now(6)),
+	('기사 3', '기사 3의 내용', 1, now(6), now(6)),
+	('기사 4', '기사 4의 내용', 3, now(6), now(6)),
+	('기사 5', '기사 5의 내용', 1, now(6), now(6)),
+	('기사 6', '기사 6의 내용', 3, now(6), now(6));
+
 # 0901 (주문 관리 시스템)
 -- 트랜잭션, 트리거, 인덱스, 뷰 학습
 # products(상품), stocks(재고)
