@@ -24,7 +24,7 @@ public class RefreshToken {
     @Column(nullable = false, unique = true, length = 512)
     private String token;
 
-    /* 마료 시각 */
+    /* 만료 시각 (밀리초 단위) */
     @Column(nullable = false)
     private Long expiry;
 
