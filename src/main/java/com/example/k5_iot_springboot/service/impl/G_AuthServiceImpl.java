@@ -8,11 +8,17 @@ import com.example.k5_iot_springboot.dto.J_Mail.MailRequest;
 import com.example.k5_iot_springboot.dto.ResponseDto;
 import com.example.k5_iot_springboot.entity.G_Role;
 import com.example.k5_iot_springboot.entity.G_User;
+import com.example.k5_iot_springboot.entity.RefreshToken;
 import com.example.k5_iot_springboot.provider.JwtProvider;
 import com.example.k5_iot_springboot.repository.G_RoleRepository;
 import com.example.k5_iot_springboot.repository.G_UserRepository;
+import com.example.k5_iot_springboot.repository.RefreshTokenRepository;
+import com.example.k5_iot_springboot.security.UserPrincipal;
 import com.example.k5_iot_springboot.service.G_AuthService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,6 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,6 +39,8 @@ import java.util.stream.Collectors;
 public class G_AuthServiceImpl implements G_AuthService {
     private final G_UserRepository userRepository;
     private final G_RoleRepository roleRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+
     private final PasswordEncoder passwordEncoder;
     // @Bean 메서드로 BCryptPasswordEncoder 객체를 리턴하면
     //      , 스프링 컨테이너에 등록될 때 PasswordEncoder 타입으로 인식 (주입 시 해당 타입으로 정의 권장)
@@ -72,8 +81,14 @@ public class G_AuthServiceImpl implements G_AuthService {
         userRepository.save(user);
     }
 
+    /**
+     * 로그인
+     * - 인증 성공 시 Access/Refresh Token 발급
+     * - Refresh Token DB + 쿠키 저장
+     * */
     @Override // 읽기 전용
-    public ResponseDto<SignInResponse> signIn(SignInRequest req) {
+    @Transactional
+    public ResponseDto<SignInResponse> signIn(SignInRequest req, HttpServletResponse response) {
 
         // 스프링 시큐리티 표준 인증 흐름 (UserDetailsService + PasswordEncoder)
         Authentication auth = authenticationManager.authenticate(
@@ -92,15 +107,37 @@ public class G_AuthServiceImpl implements G_AuthService {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toSet());
 
-        // 3) JWT 발급 (username=loginId, roles 포함)
+        // 3) Access Token 발급 (username=loginId, roles 포함)
+        //    + Refresh Token 생성
         String accessToken = jwtProvider.generateJwtToken(req.loginId(), roles);
+        String refreshToken = jwtProvider.generateRefreshToken(req.loginId(), roles);
+
+        // +) Refresh Token 저장 (기존의 토큰 삭제 후 신규 저장)
+        long expiry = System.currentTimeMillis() + 7 * 24 * 60 * 60 * 10000L; //7일 뒤
+        refreshTokenRepository.deleteByUsername(req.loginId());
+        refreshTokenRepository.flush(); // DB에 즉시 반영
+        refreshTokenRepository.save(
+                RefreshToken.builder()
+                        .username(req.loginId())
+                        .token(refreshToken)
+                        .expiry(expiry)
+                        .build()
+        );
+
+        // +) Refresh Token 쿠키 설정
+        Cookie cookie = new Cookie("refreshToken", refreshToken);
+        cookie.setHttpOnly(true);
+//        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge((int)(7*24*60*60));
+        response.addCookie(cookie);
 
         // 4) 만료 시각 추출하여 응답에 포함
         Claims claims = jwtProvider.getClaims(accessToken);
         long expiresAt = claims.getExpiration().getTime();
 
         // 5) 응답 DTO 구성
-        SignInResponse response = new SignInResponse(
+        SignInResponse result = new SignInResponse(
                 "Bearer",
                 accessToken,
                 expiresAt,
@@ -108,7 +145,40 @@ public class G_AuthServiceImpl implements G_AuthService {
                 roles
         );
 
-        return ResponseDto.setSuccess("로그인 성공", response);
+        return ResponseDto.setSuccess("로그인 성공", result);
+    }
+
+    @Override
+    public String refreshAccessToken(String refreshToken) {
+        try {
+            // 1) JWT 형식 및 서명 유효성 검증
+            if (!jwtProvider.isValidToken(refreshToken)) {
+                throw new IllegalArgumentException("유효하지 않거나 만료된 Refresh Token 입니다.");
+            }
+            // 2) Refresh Token의 subject(=username) 추출
+            String username = jwtProvider.getUsernameFromJwt(refreshToken);
+
+            // 3) DB에 저장된 Refresh Token과 일치하는지 확인
+            Optional<RefreshToken> savedToken = refreshTokenRepository.findAllByUsername(username);
+            if (savedToken.isEmpty() || !savedToken.get().getToken().equals(refreshToken)) {
+                throw new IllegalArgumentException("Refresh Token이 서버에 등록된 것과 일치하지 않습니다.");
+            }
+
+            // 4) 새 AccessToken 발급
+            Set<String> roles = jwtProvider.getRolesFromJwt(refreshToken);
+            String newAccessToken = jwtProvider.generateJwtToken(username, roles);
+
+            return newAccessToken;
+
+        } catch (ExpiredJwtException e) {
+            throw new IllegalArgumentException("Refresh Token이 만료되었습니다. 다시 로그인해주세요.");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteRefreshToken(UserPrincipal userPrincipal) {
+        refreshTokenRepository.deleteByUsername(userPrincipal.getUsername());
     }
 
     @Override
@@ -125,5 +195,7 @@ public class G_AuthServiceImpl implements G_AuthService {
 
         userRepository.save(user);
     }
+
+
 
 }

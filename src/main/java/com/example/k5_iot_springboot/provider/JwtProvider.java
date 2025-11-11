@@ -53,6 +53,7 @@ public class JwtProvider {
     // 환경 변수에 지정한 비밀키와 만료 시간 저장 변수 선언
     private final SecretKey key;
     private final long jwtExpirationMs;
+    private final long jwtRefreshExpirationMs;
     private final long jwtEmailExpirationMs;
     private final int clockSkewSeconds;
 
@@ -65,6 +66,7 @@ public class JwtProvider {
             //          >> 데이터 타입 자동 인식
             @Value("${jwt.secret}") String secret, // cf) Base64 인코딩된 비밀키 문자열이어야 함!
             @Value("${jwt.expiration}") long jwtExpirationMs,
+            @Value("${jwt.refresh-expiration}") long jwtRefreshExpirationMs,
             @Value("${jwt.email-expiration}") long jwtEmailExpirationMs,
             @Value("${jwt.clock-skew-seconds:0}") int clockSkewSeconds // 기본 0 - 옵션
     ) {
@@ -81,6 +83,7 @@ public class JwtProvider {
         // HMAC-SHA 알고리즘으로 암호화된 키 생성
         this.key = Keys.hmacShaKeyFor(secretBytes); // HMAC-SHA용 SecretKey 객체 생성
         this.jwtExpirationMs = jwtExpirationMs;
+        this.jwtRefreshExpirationMs = jwtRefreshExpirationMs;
         this.jwtEmailExpirationMs = jwtEmailExpirationMs;
         this.clockSkewSeconds = Math.max(clockSkewSeconds, 0); // 음수 방지
 
@@ -100,9 +103,21 @@ public class JwtProvider {
      *
      * subject=sub(username), roles는 커스텀 클레임 */
     public String generateJwtToken(String username, Set<String> roles) {
+        return buildToken(username, roles, jwtExpirationMs);
+    }
+
+    /*
+     * 리플레시(Refresh) 토큰 생성
+     * */
+    public String generateRefreshToken(String username, Set<String> roles) {
+        return buildToken(username, roles, jwtRefreshExpirationMs);
+    }
+
+    /** 공통 빌드 로직 (Access + Refresh) */
+    private String buildToken(String username, Set<String> roles, long expirationMs){
         long now = System.currentTimeMillis();
         Date iat = new Date(now);
-        Date exp = new Date(now + jwtExpirationMs);
+        Date exp = new Date(now + expirationMs);
 
         // List로 변환하여 직렬화 시 타입 안정성 확보
         List<String> roleList = (roles == null) ? List.of() : new ArrayList<>(roles);
